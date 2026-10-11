@@ -212,24 +212,24 @@ PROJECT is the current project."
       `(("html"
          :base-directory "content"
          :recursive t
-	 :exclude ,(concat "^gemlog\\.org$\\|" (ews-org-publish-exclude-regex "content"))
+	 :exclude ,(concat "^gemlog\\.org$\\|^publishing-schedule\\.org$\\|" (ews-org-publish-exclude-regex "content"))
 	 :publishing-directory "www"
 	 :base-url "https://peterprevos.com/"
 	 :publishing-function ews-org-publish-to-pretty-html
 	 :preparation-function ews-org-publish-generate-llms-txt
-	 :completion-function ews-org-publish-generate-sitemap-xml
+	 :completion-function (ews-org-publish-generate-sitemap-xml
+                               ews-org-publish-generate-publishing-schedule)
 	 :auto-sitemap t
 	 :sitemap-filename "toc.org"
 	 :sitemap-title "Table of Contents"
 	 :sitemap-style tree
 	 :sitemap-format-entry ews-sitemap-format-entry
 	 :sitemap-function ews-sitemap-builder-html
-	 :sitemap-sort-files alphabetically  ;;anti-chronologically
+	 :sitemap-sort-files alphabetically
 	 :sitemap-sort-folders first
 	 :sitemap-ignore-case nil
 	 :with-toc nil
 	 :with-meta t
-	 ;; :with-title nil
 	 :with-todo-keywords nil
 	 :section-numbers nil
 	 :html-head-include-scripts nil
