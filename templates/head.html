@@ -5,7 +5,7 @@
   header nav {
       display: flex;
       align-items: center;
-      gap: 0.75rem; /* Adjust spacing between elements */
+      gap: 0.75rem;
   }
 
   header nav a.logo-link {
@@ -28,12 +28,82 @@
       color: inherit;
   }
 
-  header nav ul {
-      margin-left: auto; /* Pushes the menu navigation list all the way to the right */
-  }
-
   .subtitle-row {
       display: flex;
       justify-content: space-between;
+  }
+
+  /* Desktop (default): Hide mobile menu button, show horizontal list */
+  header nav .menu-btn {
+      display: none !important;
+  }
+
+  header nav ul {
+      display: flex !important;
+      margin-left: auto;
+      list-style: none;
+      gap: 0.5rem;
+      margin-top: 0;
+      margin-bottom: 0;
+      padding: 0;
+  }
+
+  header nav ul li {
+      display: inline-block;
+  }
+
+  header nav ul li a {
+      margin: 0;
+      display: inline-block;
+  }
+
+  /* Mobile (<= 768px): Show menu button, collapse list into dropdown */
+  @media (max-width: 768px) {
+      header nav {
+          position: relative;
+          flex-wrap: wrap;
+      }
+
+      header nav .menu-btn {
+          display: inline-block !important;
+          margin-left: auto;
+          margin-bottom: 0;
+          padding: 0.25rem 0.65rem;
+          font-size: 0.95rem;
+          cursor: pointer;
+      }
+
+      header nav ul {
+          display: none !important;
+          position: absolute;
+          right: 0;
+          top: 100%;
+          background: var(--bg);
+          border: 1px solid var(--border);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+          border-radius: var(--standard-border-radius, 6px);
+          padding: 0.5rem;
+          min-width: 160px;
+          z-index: 1000;
+          flex-direction: column;
+          margin: 0.35rem 0 0 0;
+      }
+
+      header nav.menu-open ul {
+          display: flex !important;
+      }
+
+      header nav ul li {
+          margin: 0.2rem 0;
+          display: block;
+      }
+
+      header nav ul li a {
+          display: block;
+          padding: 0.4rem 0.6rem;
+          margin: 0;
+          border-radius: 4px;
+          text-align: left;
+      }
   }
 </style>
