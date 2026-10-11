@@ -1,8 +1,14 @@
 ;;; publish-www.el --- Publishing peterprevos.com -*- lexical-binding: t; -*-
-
+;;
+;; Copyright (C) 2026 Peter Prevos
+;;
+;; Author: Peter Prevos <peter@prevos.net>
+;; URL: https://github.com/pprevos/peterprevos.com/
+;;
 ;;; Commentary:
-;; Build script for HTML site generation using Org mode.
-
+;; Using org-export to generate the peterprevos.com website and Gemini capsule.
+;; HTML export configuration, Open Graph, and JSON-LD
+;;
 ;;; Code:
 
 ;; Load shared publishing definitions and package environment

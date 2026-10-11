@@ -1,8 +1,14 @@
 ;;; publish-gmi.el --- Publishing peterprevos.com Gemini Capsule -*- lexical-binding: t; -*-
-
+;;
+;; Copyright (C) 2026 Peter Prevos
+;;
+;; Author: Peter Prevos <peter@prevos.net>
+;; URL: https://github.com/pprevos/peterprevos.com/
+;;
 ;;; Commentary:
-;; Build script for Gemini capsule generation using Org mode.
-
+;; Using org-export to generate the peterprevos.com website and Gemini capsule.
+;; Gemini export configuration and Gemtext AST transcoders
+;;
 ;;; Code:
 
 ;; Load shared publishing definitions and package environment
