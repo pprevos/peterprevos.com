@@ -86,6 +86,15 @@ The `ox-gemini` package has been enhanced to allow for better rendering. Ideally
 * Atomic colophon injection (`ews-gemini-final-output-filter`):
   * Appends the colophon during export, eliminating post-build file-rewrite loops.
 
+### 7. Editorial Workflow & Org-agenda Integration
+* Publishing Schedule Completion Function (`ews-org-publish-generate-publishing-schedule`):
+  * Evaluates after HTML publishing to generate `publishing-schedule.org` in the project root.
+  * Collects all draft and future-embargoed articles excluded from publishing.
+  * Articles with scheduled publication dates are assigned the `TODO` keyword with an Org deadline.
+  * Articles without a date are assigned the `NEXT` keyword for actionable backlog drafting.
+  * Reuses the generated table of contents to append a `* Published` section listing all live articles.
+  * Can be appended to `org-agenda-files`
+
 ## Building the Capsule & Website
 
 The build script `publish.sh` manages compilation:

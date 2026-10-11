@@ -407,5 +407,71 @@
         (insert "</urlset>\n"))
       (message "Generated XML sitemap: %s" sitemap-file))))
 
+;;; Publishing Schedule Generator for Org-agenda
+(defun ews-org-publish-generate-publishing-schedule (plist)
+  "Generate publishing-schedule.org in project root listing unpublished posts and published TOC."
+  (let* ((base-dir (expand-file-name (or (plist-get plist :base-directory) "content")))
+         (project-root (or (locate-dominating-file base-dir "content")
+                           (expand-file-name ".")))
+         (schedule-file (expand-file-name "publishing-schedule.org" project-root))
+         (toc-file (expand-file-name (or (plist-get plist :sitemap-filename) "toc.org") base-dir))
+         (exclude-regex (or (plist-get plist :exclude)
+                            (ews-org-publish-exclude-regex base-dir)))
+         (all-files (when (file-directory-p base-dir)
+                      (directory-files-recursively base-dir "\\.org$")))
+         todo-items
+         next-items)
+    (dolist (f all-files)
+      (let ((rel (file-relative-name f base-dir)))
+        (when (and exclude-regex
+                   (string-match-p exclude-regex rel)
+                   (not (member (file-name-nondirectory rel)
+                                '("index.org" "toc.org" "theindex.org" "gemlog.org" "404.org" "about.org" "sitemap.org" "publishing-schedule.org"))))
+          (with-temp-buffer
+            (insert-file-contents f)
+            (org-mode)
+            (let* ((kw (org-collect-keywords '("TITLE" "DATE" "FILETAGS")))
+                   (title (or (car (cdr (assoc "TITLE" kw))) (file-name-base f)))
+                   (raw-date (car (cdr (assoc "DATE" kw))))
+                   (tags (car (cdr (assoc "FILETAGS" kw))))
+                   (tag-str (if (org-string-nw-p tags) (concat " " (string-trim tags)) ""))
+                   (rel-path (file-relative-name f project-root))
+                   (date-match (and raw-date (string-match "\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\)" raw-date)
+                                    (match-string 1 raw-date))))
+              (if date-match
+                  (let* ((time (date-to-time (concat date-match " 00:00:00")))
+                         (ts (format-time-string "<%Y-%m-%d %a>" time)))
+                    (push (list :date date-match
+                                :entry (format "* TODO [[file:%s][%s]]%s\nDEADLINE: %s\n"
+                                               rel-path title tag-str ts))
+                          todo-items))
+                (push (format "* NEXT [[file:%s][%s]]%s\n" rel-path title tag-str)
+                      next-items)))))))
+    (setq todo-items (sort todo-items (lambda (a b) (string< (plist-get a :date) (plist-get b :date)))))
+    (let ((published-toc
+           (when (file-exists-p toc-file)
+             (with-temp-buffer
+               (insert-file-contents toc-file)
+               (goto-char (point-min))
+               (while (and (not (eobp)) (looking-at-p "^[ \t]*#\\+"))
+                 (forward-line 1))
+               (while (and (not (eobp)) (looking-at-p "^[ \t]*$"))
+                 (forward-line 1))
+               (let ((body (buffer-substring-no-properties (point) (point-max))))
+                 (string-trim (replace-regexp-in-string "\\[\\[file:\\([^/]\\)" "[[file:content/\\1" body)))))))
+      (with-temp-file schedule-file
+        (insert "#+title: Publishing Schedule\n")
+        (insert "#+todo: TODO(t) NEXT(n) WAIT(w@/!) PROJECT(p) | DONE(d!) CANCELED(c@/!)\n\n")
+        (when todo-items
+          (insert (mapconcat (lambda (x) (plist-get x :entry)) todo-items "\n"))
+          (insert "\n"))
+        (when next-items
+          (insert (mapconcat #'identity (nreverse next-items) "\n"))
+          (insert "\n"))
+        (when (org-string-nw-p published-toc)
+          (insert "* Published\n")
+          (insert published-toc "\n"))))
+    (message "Generated publishing schedule: %s" schedule-file)))
+
 (provide 'publish-common)
 ;;; publish-common.el ends here
