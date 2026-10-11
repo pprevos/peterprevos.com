@@ -1,0 +1,17 @@
+# Emacs backup and autosave files
+*~
+\#*\#
+.#*
+*.elc
+
+# Private local certificates and keys
+.certificates/
+
+# ELPA / MELPA archive cache
+.packages/
+
+# Content can be viewed on the website or capsule
+content/
+www/
+gmi/
+static*/
