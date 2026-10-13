@@ -20,9 +20,16 @@
 (unless package-archive-contents
   (ignore-errors (package-refresh-contents)))
 
+(use-package htmlize
+  :ensure t)
+
+(use-package ox-gemini
+  :ensure t)
+
 ;; Generic variables
 (setq user-full-name "Peter Prevos"
-      user-mail-address "peter@prevos.net")
+      user-mail-address "peter@prevos.net"
+      org-publish-timestamp-directory ".org-timestamps")
 
 (require 'org)
 (require 'ox)
