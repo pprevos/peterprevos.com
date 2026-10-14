@@ -150,10 +150,12 @@
       ('html   (ews-org-publish-list-files-html articles))
       (_       (ews-org-publish-list-files-html articles)))))
 
-;; Register global macro and bepoke options
+;; Register global macro and bespoke options
 (with-eval-after-load 'ox
   (add-to-list 'org-export-global-macros
                '("list-files" . "(eval (ews-org-publish-list-files))"))
+  (add-to-list 'org-export-global-macros
+               '("youtube" . "@@html:<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/$1\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>@@@@latex:\\href{https://www.youtube.com/watch?v=$1}{Watch $2 on YouTube}@@@@gemini:=> https://www.youtube.com/watch?v=$1 Watch $2 on YouTube@@"))
   (add-to-list 'org-export-options-alist
                '(:with-meta nil "meta" nil)))
 
