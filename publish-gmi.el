@@ -20,7 +20,15 @@
 (require 'ox-gemini)
 (require 'image)
 
+(defun ews-gemini-export-snippet (snippet _contents _info)
+  "Transcode an Org export SNIPPET into Gemtext.
+Supports snippets targeted to gemini, gmi, or gemtext (case-insensitive)."
+  (when (member (downcase (symbol-name (org-export-snippet-backend snippet)))
+                '("gemini" "gmi" "gemtext"))
+    (org-element-property :value snippet)))
+
 ;; Strip emphasis markers (Gemtext has no inline bold/italics syntax)
+;; and support Gemini export snippets
 (let ((backend (org-export-get-backend 'gemini)))
   (setf (org-export-backend-transcoders backend)
         (append '((italic . (lambda (_i contents _info) contents))
@@ -30,7 +38,8 @@
                   (verbatim . (lambda (v _c _info)
                                 (format "`%s`" (org-element-property :value v))))
                   (code . (lambda (c _c _info)
-                            (format "`%s`" (string-trim (org-element-property :value c))))))
+                            (format "`%s`" (string-trim (org-element-property :value c)))))
+                  (export-snippet . ews-gemini-export-snippet))
                 (org-export-backend-transcoders backend))))
 
 ;; Updates to ox-gemini
