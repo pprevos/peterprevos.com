@@ -1,6 +1,7 @@
 <meta name="robots" content="index, follow"/>
 <link rel="icon" type="image/png" href="/images/favicon.png"/>
 <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+<!-- CSS modifications -->
 <style>
   header nav {
       display: flex;
@@ -12,7 +13,7 @@
       border: none !important;
       background: none !important;
       padding: 0 !important;
-      display: flex; /* Removes inline spacing under image */
+      display: flex;
   }
 
   header nav .site-title {
@@ -104,6 +105,24 @@
           margin: 0;
           border-radius: 4px;
           text-align: left;
+      }
+  }
+  /* Reduce font size inside code blocks */
+  pre, pre code {
+      font-size: 0.9rem; /* Default in Simple.css is usually ~1rem */
+      line-height: 1.4;   /* Adjust line height for readability */
+  }
+  /* CSS Grid  */
+  .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+  }
+
+  /* Responsive on smaller screens */
+  @media (max-width: 768px) {
+      .grid-container {
+	  grid-template-columns: 1fr;
       }
   }
 </style>
