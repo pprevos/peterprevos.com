@@ -1,4 +1,4 @@
-;;; publish-common.el --- Shared macros for publishing -*- lexical-binding: t; -*-
+;;; publish-common.el --- Shared functions and macros for publishing -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2026 Peter Prevos
 ;;
@@ -7,7 +7,7 @@
 ;;
 ;;; Commentary:
 ;; Using org-export to generate the peterprevos.com website and Gemini capsule.
-;; Shared macros, filters, metadata extractors, and sitemaps
+;; Shared functions, macros, filters, metadata extractors, and sitemaps
 ;;
 ;;; Code:
 

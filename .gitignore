@@ -3,12 +3,17 @@
 \#*\#
 .#*
 *.elc
+# Publishing schedule
+publishing-schedule.org
 
 # Private local certificates and keys
 .certificates/
 
 # ELPA / MELPA archive cache
 .packages/
+
+# Timestamps
+.org-timestamps/
 
 # Content can be viewed on the website or capsule
 content/
