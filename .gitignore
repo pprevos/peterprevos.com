@@ -3,8 +3,12 @@
 \#*\#
 .#*
 *.elc
+
 # Publishing schedule
 publishing-schedule.org
+
+# PDF version
+publish-pdf.el
 
 # Private local certificates and keys
 .certificates/
@@ -19,4 +23,3 @@ publishing-schedule.org
 content/
 www/
 gmi/
-static*/
