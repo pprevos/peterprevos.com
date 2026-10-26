@@ -4,28 +4,6 @@
 #
 # This script orchestrates static site generation using Emacs Org mode in batch mode.
 # It can compile the World Wide Web (HTML) version, the Gemini capsule, or both.
-#
-# USAGE:
-#   ./publish.sh [TARGET] [OPTIONS]
-#
-# TARGETS:
-#   -www         Publish the World Wide Web (HTML) site into 'www/'.
-#   -gmi         Publish the Gemini capsule (Gemtext) into 'gmi/'.
-#   (none)       If no target is given, both targets are published.
-#
-# OPTIONS:
-#   -rw          Rewrite mode. Deletes the output directory ('www/' or 'gmi/')
-#                and forces a complete rebuild of all files.
-#                Without this flag, Org mode performs a fast incremental build,
-#                skipping unchanged files based on timestamp cache.
-#   -h, --help   Show usage information.
-#
-# EXAMPLES:
-#   ./publish.sh            # Incremental build of both Web and Gemini sites
-#   ./publish.sh -www       # Incremental build of HTML website only
-#   ./publish.sh -gmi -rw   # Full, clean rebuild of Gemini capsule
-#   ./publish.sh -rw        # Full, clean rebuild of both sites
-#
 
 show_help() {
     cat <<EOF
@@ -42,17 +20,20 @@ OPTIONS:
   -rw          Rewrite mode: delete output folder ('www/' or 'gmi/') and
                force a full rebuild of all files. Without this flag, an
                incremental build is performed, skipping unmodified files.
+  -d           Include drafts and future-dated posts in the published output.
   -h, --help   Display this help message and exit.
 
 EXAMPLES:
   $0               Incremental build of both Web and Gemini sites
   $0 -www          Incremental build of HTML website only
   $0 -gmi -rw      Clean rebuild of Gemini capsule from scratch
+  $0 -d            Build both sites including drafts and future posts
   $0 -rw           Clean rebuild of both Web and Gemini sites
 EOF
 }
 
 rw_val="nil"
+drafts_val="nil"
 target=""
 
 # Parse command line flags
@@ -60,6 +41,9 @@ for arg in "$@"; do
     case "$arg" in
         -rw)
             rw_val="t"
+            ;;
+        -d)
+            drafts_val="t"
             ;;
         -www)
             target="www"
@@ -80,12 +64,63 @@ for arg in "$@"; do
     esac
 done
 
+# Navigate to the script's directory for robust execution
+cd "$(dirname "$0")" || exit 1
+
+minify_css() {
+    if command -v perl >/dev/null 2>&1; then
+        perl -0777 -pe '
+            s{/\*.*?\*/}{}gs;
+            s{\s+}{ }g;
+            s{\s*([;{}:,>])\s*}{$1}g;
+            s{;(?=\})}{}g;
+            s{^\s+|\s+$}{}g;
+        '
+    else
+        cat
+    fi
+}
+
+build_css() {
+    SIMPLE_CSS_URL="https://cdn.simplecss.org/simple.min.css"
+    CACHE_DIR=".packages"
+    CACHE_FILE="$CACHE_DIR/simple.min.css"
+    DEST_DIR="content/static-www"
+    DEST_FILE="$DEST_DIR/custom.css"
+    CUSTOM_SRC="templates/custom.css"
+
+    mkdir -p "$CACHE_DIR" "$DEST_DIR"
+
+    echo "Fetching latest SimpleCSS from $SIMPLE_CSS_URL..."
+    if wget -q --timeout=15 -O "$CACHE_FILE.tmp" "$SIMPLE_CSS_URL"; then
+        mv "$CACHE_FILE.tmp" "$CACHE_FILE"
+    else
+        echo "Failed to download SimpleCSS. Using cached copy if available." >&2
+        rm -f "$CACHE_FILE.tmp"
+    fi
+
+    if [ ! -f "$CACHE_FILE" ]; then
+        echo "Error: SimpleCSS could not be downloaded and no cached copy found at $CACHE_FILE." >&2
+        exit 1
+    fi
+
+    echo "Bundling and minifying SimpleCSS with $CUSTOM_SRC -> $DEST_FILE..."
+    {
+        cat "$CACHE_FILE"
+        echo ""
+        minify_css < "$CUSTOM_SRC"
+        echo ""
+    } > "$DEST_FILE"
+}
+
 publish_www() {
+    build_css
     if [ "$rw_val" = "t" ]; then
         rm -rf www
     fi
     emacs -Q --batch \
         --eval "(setq ews-rw $rw_val)" \
+        --eval "(setq ews-drafts $drafts_val)" \
         --load publish-www.el \
         --eval '(ews-publish)'
 }
@@ -96,6 +131,7 @@ publish_gmi() {
     fi
     emacs -Q --batch \
         --eval "(setq ews-rw $rw_val)" \
+        --eval "(setq ews-drafts $drafts_val)" \
         --load publish-gmi.el \
         --eval '(ews-publish)'
 }
