@@ -312,6 +312,21 @@ Uses `ews-org-publish-category-dirs' to discover categories."
      categories
      "\n")))
 
+(defun ews-org-publish-dynamic-files (&optional base-dir backend)
+  "Return relative paths of all Org files in BASE-DIR containing dynamic macros.
+Scans for macro calls like {{{list-files}}} and respects embargo/exclusions for BACKEND."
+  (let* ((dir (or base-dir (ews-org-publish-base-dir)))
+         (all-files (when (file-directory-p dir)
+                      (directory-files-recursively dir "\\.org$")))
+         matches)
+    (dolist (file all-files)
+      (unless (ews-org-file-excluded-p file (or backend 'www) (bound-and-true-p ews-drafts))
+        (with-temp-buffer
+          (insert-file-contents file)
+          (when (re-search-forward "{{{list-files" nil t)
+            (push (file-relative-name file dir) matches)))))
+    (nreverse matches)))
+
 (defun ews-org-get-page-meta (info)
   "Extract author, formatted date, word count, and reading time for INFO.
 Used in subtitle when `article' is non-nil."

@@ -58,6 +58,7 @@ This publishing system extends standard Org mode export (`ox-publish`, `ox-html`
   * Calls `ews-org-publish-list-files` to dynamically render a list of articles with links and descriptions.
   * Prepends date to the title by default, or the `#+order:` string when sorted by order, followed by the description.
   * Accepts an optional argument, e.g. `{{{list-files(order)}}}`, to sort ascending by each file's `#+order:` string (e.g. `"01"`, `"02"`, `"01-03"`). Unordered articles follow at the end sorted by date.
+  * **Freshness Guarantee (`html-always`)**: Because Org mode caches file modification timestamps, category hub pages (`logos/index.org`, `praxis/index.org`, etc.) would otherwise be skipped during incremental builds when new articles are added. `publish-www.el` defines an `"html-always"` project that forces re-exporting all category index pages on every run (`(org-publish "html-always" t)`), guaranteeing that dynamic article listings stay up to date without requiring a slow full site rebuild (`-rw`).
 * `{{{atom-feeds}}}` generates an HTML list of category Atom feeds:
   * Calls `ews-org-publish-atom-feeds` using `ews-org-publish-category-dirs` to discover categories.
   * Formats links with `@@html:@@` export snippets for the HTML backend (e.g. on `/toc/#feeds`).
@@ -166,8 +167,8 @@ The build script `publish.sh` manages compilation:
 
 The automation script `social-card-generator.sh` creates custom Open Graph cards (1200 × 630) for each page:
 * Parses titles from compiled HTML files in `www/`.
-* Composites wrapped typography over `content/images/default-social-card-image.png`.
-* Saves each card as a unique file in `content/images/${slug}.png` (which `publish.sh` automatically publishes to `www/images/`).
+* Composites wrapped typography over `content/images/social/default-social-card-image.png`.
+* Saves each card as a unique file in `content/images/social/${slug}.png` (which `publish.sh` automatically publishes to `www/images/social/`).
 * Automatically skips custom illustrations (e.g. photos defined via `#+image:`) to avoid overwriting them.
 * Incremental generation: skips images that are already newer than their corresponding HTML file.
 

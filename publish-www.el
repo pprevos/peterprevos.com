@@ -131,7 +131,7 @@ INFO is the plist holding export options and document state."
 	 (article-p (plist-get info :article))
 	 (description (or (plist-get info :description) title))
          (author (or (org-export-data (plist-get info :author) info) user-full-name))
-         (base-url (plist-get info :base-url))
+         (base-url (or (plist-get info :base-url) ews-canonical-base-url))
          ;; Canonical URL Resolution
          (input-file (or (plist-get info :input-file)
                          (org-element-property :path (plist-get info :parse-tree))
@@ -343,6 +343,21 @@ representation of the files to include, as returned by `org-list-to-lisp'."
             "Subscribe to category feeds using your RSS/Atom reader:\n\n"
             "{{{atom-feeds}}}\n\n")))
 
+;; Set global publishing parameters to avoid repetition
+(setq org-export-with-toc nil
+      org-export-with-todo-keywords nil
+      org-export-with-drawers nil
+      org-export-with-section-numbers nil
+      org-html-head-include-scripts nil
+      org-html-head-include-default-style nil
+      org-html-doctype "html5"
+      org-html-html5-fancy t
+      org-html-divs '((preamble "header" "preamble")
+		      (content "main" "content")
+		      (postamble "footer" "postamble"))
+      org-html-container-element "section"
+)
+
 ;; Set publishing parameters
 (setq org-publish-project-alist
       `(("html"
@@ -370,22 +385,8 @@ representation of the files to include, as returned by `org-list-to-lisp'."
 	 :sitemap-function ews-sitemap-builder-html
 	 :sitemap-sort-files anti-chronologically
 	 :sitemap-sort-folders first
-	 :sitemap-ignore-case nil
-	 :with-toc nil
-	 :article t
-	 :with-todo-keywords nil
-	 :with-drawers nil
-	 :section-numbers nil
-	 :html-head-include-scripts nil
-	 :html-head-include-default-style nil
 	 :html-head ,ews-org-html-head-static
 	 :html-head-extra ews-org-html-open-graph-tags
-	 :html-doctype "html5"
-	 :html-html5-fancy t
-	 :html-divs ((preamble  "header" "preamble")
-                     (content   "main"   "content")
-                     (postamble "footer" "postamble"))
-	 :html-container "section"
 	 :html-metadata-timestamp-format "%e %B %Y"
 	 :html-preamble ews-org-html-preamble
 	 :html-postamble ews-org-html-postamble
@@ -394,6 +395,23 @@ representation of the files to include, as returned by `org-list-to-lisp'."
 	 :filter-paragraph (ews-org-html-filter-figure-paragraph)
 	 :filter-final-output (ews-org-html-clean-meta-filter)
 	 :makeindex t)
+	("html-always"
+	 ;; Ensure that pages with {{{list-files}}} are always published
+         :base-directory "content"
+	 :exclude ".*"
+	 :include ,(ews-org-publish-dynamic-files)
+	 :recursive t
+         :publishing-directory "www"
+	 :base-url ,ews-canonical-base-url
+	 :publishing-function ews-org-publish-to-pretty-html
+	 :html-head ,ews-org-html-head-static
+	 :html-head-extra ews-org-html-open-graph-tags
+	 :html-preamble ews-org-html-preamble
+	 :html-postamble ews-org-html-postamble
+	 :filter-link (ews-org-html-pretty-link-filter)
+	 :filter-parse-tree (ews-org-html-auto-subtitle)
+	 :filter-paragraph (ews-org-html-filter-figure-paragraph)
+	 :filter-final-output (ews-org-html-clean-meta-filter))
         ("images"
          :base-directory "content/images"
          :publishing-directory "www/images"
@@ -411,9 +429,10 @@ representation of the files to include, as returned by `org-list-to-lisp'."
 
 ;;; Publish function
 (defun ews-publish ()
-  "Publish the entire site."
+  "Publish the World Wide Web version."
   (org-publish "website" (or (bound-and-true-p ews-rw)
                              (bound-and-true-p ews-drafts)))
+  (org-publish "html-always" t)
   (message "Website published!"))
 
 (provide 'publish-www)

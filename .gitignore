@@ -22,4 +22,5 @@ publish-pdf.el
 # Content can be viewed on the website or capsule
 content/
 www/
+www-pub/
 gmi/

@@ -1,0 +1,243 @@
+/* Custom CSS modifications for peterprevos.com */
+
+header nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+header nav a.logo-link {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    display: flex;
+}
+
+header nav .site-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 0;
+}
+
+header nav .site-title a {
+    text-decoration: none;
+    border: none !important;
+    color: inherit;
+}
+
+.subtitle-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Desktop (default): Hide mobile menu button, show horizontal list */
+header nav .menu-btn {
+    display: none !important;
+}
+
+header nav ul {
+    display: flex !important;
+    margin-left: auto;
+    list-style: none;
+    gap: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+header nav ul li {
+    display: inline-block;
+}
+
+header nav ul li a {
+    margin: 0;
+    display: inline-block;
+}
+
+/* Breadcrumb navigation */
+header nav.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    color: var(--text-light);
+}
+
+header nav.breadcrumb a {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+header nav.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+header nav.breadcrumb span {
+    color: var(--text);
+}
+
+/* Mobile (<= 768px): Show menu button, collapse list into dropdown */
+@media (max-width: 768px) {
+    header nav {
+        position: relative;
+        flex-wrap: wrap;
+    }
+
+    header nav .menu-btn {
+        display: inline-block !important;
+        margin-left: auto;
+        margin-bottom: 0;
+        padding: 0.25rem 0.65rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    header nav ul {
+        display: none !important;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        border-radius: var(--standard-border-radius, 6px);
+        padding: 0.5rem;
+        min-width: 160px;
+        z-index: 1000;
+        flex-direction: column;
+        align-items: stretch !important;
+        text-align: left !important;
+        margin: 0.35rem 0 0 0;
+    }
+
+    header nav.menu-open ul {
+        display: flex !important;
+    }
+
+    header nav ul li {
+        margin: 0.2rem 0;
+        display: block;
+        width: 100%;
+        text-align: left !important;
+    }
+
+    header nav ul li a {
+        display: block;
+        width: 100%;
+        padding: 0.4rem 0.6rem !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 4px;
+        text-align: left !important;
+        text-decoration: none !important;
+        box-sizing: border-box;
+    }
+
+    header nav ul li a:hover {
+        background: var(--accent-bg) !important;
+        border: none !important;
+    }
+}
+
+/* Reduce font size inside code blocks */
+pre, pre code {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Embedded media */
+figure iframe {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    border: 0;
+}
+
+/* CSS Grid  */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+}
+
+/* Responsive on smaller screens */
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Left-align card text and content */
+.card {
+    text-align: left;
+}
+
+/* Compact footer line spacing */
+footer p {
+    margin: 0.25rem 0;
+    line-height: 1.35;
+}
+
+/* Footer SVG icons */
+.cc-icon {
+    height: 1.8em;
+    width: auto;
+    vertical-align: middle;
+    fill: currentColor;
+}
+
+.social-icon {
+    height: 1.8em;
+    width: auto;
+    margin-left: 4em;
+    margin-right: 1em;
+    vertical-align: -0.5em;
+    fill: currentColor;
+}
+
+@media (max-width: 768px) {
+    .social-icon {
+        margin-left: 0;
+    }
+}
+
+/* Code syntax highlighting (htmlize CSS classes) */
+.org-keyword,
+.org-builtin {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.org-string,
+.org-doc {
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.org-comment,
+.org-comment-delimiter {
+    color: var(--text-light);
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.org-function-name {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.org-variable-name,
+.org-constant,
+.org-type {
+    color: var(--text);
+    font-weight: 500;
+}
