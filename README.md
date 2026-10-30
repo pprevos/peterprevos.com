@@ -2,65 +2,67 @@
 
 This repository contains the custom Emacs Org mode publishing pipeline for [peterprevos.com](https://peterprevos.com) and its twin Gemini capsule (`gemini://peterprevos.com`).
 
-A series of three articles on [Publishing Websites with Emacs and Org Mode](https://peterprevos.com/praxis/publishing-websites-with-org-mode-01-principles/) explains how to build websites with Emacs Org mode in great detail.
+A series of articles on [Publishing Websites with Emacs and Org Mode](https://peterprevos.com/praxis/publishing-websites-with-org-mode-01-principles/) explains how to build websites and Gemini capsules with Emacs Org mode in great detail.
+
+Note: The code for this website was developed with the assistance of AI and manually refactored.
 
 ## Directory Structure
 
 ```text
-├── publish.sh            # Bash build script 
-├── upload.sh             # rsync website and capsule over SSH
-├── social-card-generator.sh # Generate custom social cards from template
-├── publish-common.el     # Shared macros and functions
-├── publish-www.el        # HTML export
-├── publish-gmi.el        # Gemini export
-├── templates/            # HTML templates and source stylesheet
-│   ├── head.html         # Document <head> markup
-│   ├── preamble.html     # Header navigation menu
-│   ├── postamble.html    # Footer markup and licensing
-│   └── custom.css        # Source CSS modifications for peterprevos.com
-├── content/              # Org source files and static assets
-│   ├── images/           # Images
-│   ├── static-www/       # Web static assets
-│   └── static-gmi/       # Gemini static assets
-├── www/                  # Compiled HTML website
-└── gmi/                  # Compiled Gemini capsule
+├── publish.sh          # Bash build script 
+├── upload.sh           # rsync website and capsule over SSH
+├── social-cards.sh     # Generate custom social cards from template
+├── publish-common.el   # Shared macros and functions
+├── publish-www.el      # HTML export
+├── publish-gmi.el      # Gemini export
+├── templates/          # HTML templates and source stylesheet
+│   ├── head.html       # Document <head> markup
+│   ├── preamble.html   # Header navigation menu
+│   ├── postamble.html  # Footer markup and licensing
+│   └── custom.css      # Source CSS modifications
+├── content/            # Org source files and static assets
+│   ├── images/         # Images
+│   ├── static-www/     # Web static assets
+│   └── static-gmi/     # Gemini static assets
+├── www/                # Compiled HTML website
+└── gmi/                # Compiled Gemini capsule
 ```
 
 ## Custom Functionality
 
-This publishing system extends standard Org mode export (`ox-publish`, `ox-html`, and `ox-gemini`) with several bespoke functions.
+This publishing system extends standard Org mode export (`ox-publish`, `ox-html`, and `ox-gemini`) with bespoke functions and bash scripts.
 
 ### 1. Batch execution
-* Hermetic Invocation (`publish.sh`): Runs Emacs in batch mode, independent of the personal configuration.
-  * Fetches the latest upstream SimpleCSS (`simple.min.css`) and caches it in `.packages/`.
+* `publish.sh`: Runs Emacs in batch mode, independent of the personal configuration.
+  * Fetches the latest upstream SimpleCSS and caches it in `.packages/`.
   * Minifies site overrides in `templates/custom.css` (stripping comments, whitespace, and redundant syntax).
   * Concatenates SimpleCSS with the minified custom CSS into `content/static-www/custom.css`.
   * Eliminates external CDN dependencies and loads a single self-hosted stylesheet.
 * Dynamic Base Directory Resolution (`ews-org-publish-base-dir`):
   * Resolves the content directory dynamically from `:base-directory` in `org-publish-project-alist`.
-  * Uses `locate-dominating-file` to reliably anchor the root, eliminating hardcoded directory names across publishing functions, feed generators, filters, and macros.
+  * Uses `locate-dominating-file` to anchor the root, eliminating hard-coded directory names.
 
 ### 2. Content lifecycle and file embargo
 * Draft and embargo filtering (`ews-org-publish-exclude-regex`) excludes:
   * Files containing `#+draft: t`
   * Files with future dates (`#+date: <YYYY-MM-DD>`)
-  * `#+options: www:nil`: Excludes a file from the HTML website output.
-  * `#+options: gmi:nil`: Excludes a file from the Gemini capsule output.
+  * `#+options: www:nil`: Excludes a file from the HTML website.
+  * `#+options: gmi:nil`: Excludes a file from the Gemini capsule.
 * Draft inclusion flag (`./publish.sh -d`):
   * Sets `ews-drafts` to `t`, publishing embargoed, draft, and future-dated articles.
 * Shared metadata parsing (`ews-org-get-page-meta`):
   * Extracts author name and publication date.
   * Computes estimated reading time at 200 words per minute.
-  * Injects author name, date, word count, and reading time as subtitle on articles (`:article t`). Non-article pages (e.g. index, TOC, and hub pages) disable this via `#+options: article:nil`.
+  * Injects author name, date, word count, and reading time as subtitle on articles. Other pages (e.g. index, TOC, and hub pages) disable this via `#+options: article:nil`.
 
 ### 3. Org macros
 * `{{{list-files}}}` generates category pages:
   * Calls `ews-org-publish-list-files` to dynamically render a list of articles with links and descriptions.
   * Prepends date to the title by default, or the `#+order:` string when sorted by order, followed by the description.
   * Accepts an optional argument, e.g. `{{{list-files(order)}}}`, to sort ascending by each file's `#+order:` string (e.g. `"01"`, `"02"`, `"01-03"`). Unordered articles follow at the end sorted by date.
-  * **Freshness Guarantee (`html-always`)**: Because Org mode caches file modification timestamps, category hub pages (`logos/index.org`, `praxis/index.org`, etc.) would otherwise be skipped during incremental builds when new articles are added. `publish-www.el` defines an `"html-always"` project that forces re-exporting all category index pages on every run (`(org-publish "html-always" t)`), guaranteeing that dynamic article listings stay up to date without requiring a slow full site rebuild (`-rw`).
+  *Freshness Guarantee (`html-always`): Because Org mode caches file modification timestamps, category hub pages (`logos/index.org`, `praxis/index.org`, etc.) would be skipped during incremental builds when new articles are added. `publish-www.el` defines an `"html-always"` project that forces re-exporting all category index pages on every run (`(org-publish "html-always" t)`), guaranteeing that dynamic article listings stay up to date without requiring a slow full site rebuild (`-rw`).
 * `{{{atom-feeds}}}` generates an HTML list of category Atom feeds:
-  * Calls `ews-org-publish-atom-feeds` using `ews-org-publish-category-dirs` to discover categories.
+  * Calls `ews-org-publish-atom-feeds`
   * Formats links with `@@html:@@` export snippets for the HTML backend (e.g. on `/toc/#feeds`).
 * `{{{youtube(id, caption)}}}` embeds a responsive player with `<figure>` and `<figcaption>` in HTML, or a hyperlink in LaTeX / Gemtext.
 * `{{{youtube-playlist(id, caption)}}}` embeds YouTube playlists with responsive layout and captions across backends.
@@ -80,8 +82,8 @@ This publishing system extends standard Org mode export (`ox-publish`, `ox-html`
   * Cascading social card resolution:
     1. Explicit `#+image:` keyword defined in the article.
     2. Auto-generated per-page card (`images/${slug}.png`) if present in `content/images/`.
-    3. Global fallback to `:default-social-card-image` (`images/default-social-card-image.png`).
-  * If no `#+image:` is specified and no card exists on disk, image meta tags (`og:image`, `twitter:image`) are cleanly omitted and Twitter cards switch to standard `summary`.
+    3. Global fallback to `:default-social-card-image`.
+    4. If no `#+image:` is specified and no card exists on disk, image meta tags (`og:image`, `twitter:image`) are cleanly omitted and Twitter cards switch to standard `summary`.
 * Category Atom Feeds (`webfeeder` & `ews-org-publish-generate-category-feeds`):
   * Generates an Atom feed (`atom.xml`) for each category subdirectory in `content/` (`/logos/`, `/praxis/`, etc.) during `:completion-function`.
   * Preserves article publication dates (`#+date:`) and pretty URL slugs.
@@ -101,7 +103,7 @@ This publishing system extends standard Org mode export (`ox-publish`, `ox-html`
   * Evaluates during `:preparation-function`.
 
 ### 6. Gemini Capsule Optimizations (`publish-gmi.el`)
-The `ox-gemini` package has been enhanced to allow for better rendering. Ideally some of these should be incorporated upstream into the package.
+The `ox-gemini` package needed enhancing to allow for better rendering. Ideally some of these should be incorporated upstream into the package.
 
 * Preformatted Example Blocks (`ews-gemini-example-block`):
   * Transcodes `#+begin_example` blocks to standard Gemtext preformatted toggles (```), preserving ASCII diagrams and verbatim text alignment.
@@ -165,7 +167,7 @@ The build script `publish.sh` manages compilation:
 
 ## Generating Social Sharing Cards
 
-The automation script `social-card-generator.sh` creates custom Open Graph cards (1200 × 630) for each page:
+The automation script `social-cards.sh` creates custom Open Graph cards (1200 × 630) for each page:
 * Parses titles from compiled HTML files in `www/`.
 * Composites wrapped typography over `content/images/social/default-social-card-image.png`.
 * Saves each card as a unique file in `content/images/social/${slug}.png` (which `publish.sh` automatically publishes to `www/images/social/`).
@@ -174,7 +176,7 @@ The automation script `social-card-generator.sh` creates custom Open Graph cards
 
 ```bash
 # Generate cards for all compiled pages in www/
-./social-card-generator.sh
+./social-cards.sh
 ```
 
 ## Uploading to Remote Server
@@ -200,5 +202,3 @@ The deployment script `upload.sh` synchronises compiled files using `rsync` over
 # Upload both targets
 ./upload.sh
 ```
-
-Note: The code for this website was developed with the assistance of AI and manually refactored.
